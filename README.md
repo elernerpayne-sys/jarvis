@@ -20,7 +20,7 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5173>. With no Supabase keys set the app runs in
+Open <http://localhost:5173>. With nothing configured the app runs in
 **demo mode**: realistic sample data, no sign-in, and a small simulator so
 things move on their own (a running task logs lines and then asks for
 approval, calls come in, tasks you start run to completion). Nothing is
@@ -33,8 +33,9 @@ real voice conversation needs live mode (below) and an https address.
 To look at a particular state, add `?demo=empty`, `?demo=error` or
 `?demo=slow` to the address. `?demo=off` goes back to normal.
 
-Demo mode is on **only** while `VITE_SUPABASE_URL` or the key is missing. As
-soon as both are set, the app is live and everything sits behind sign-in.
+Demo mode is on **only** while nothing is configured. As soon as
+`VITE_JARVIS_API_URL` is set (or, for the Supabase alternative, both Supabase
+values), the app is live and everything sits behind sign-in.
 
 ## Open it on your phone
 
@@ -65,76 +66,51 @@ under Settings → On your phone).
 
 ## Go live
 
-You need a Supabase project, your ElevenLabs agent, and (for coding tasks)
-your Jarvis backend. Do the steps in this order.
+The app talks straight to **your Jarvis backend**, the server you already
+run. Your backend keeps every key (ElevenLabs and the rest); the app only
+knows its address. Three steps:
 
-### 1. Create the Supabase project and lock sign-up
+### 1. Add the app's endpoints to your Jarvis backend
 
-1. Create a project at <https://supabase.com>.
-2. **Authentication → Sign In / Providers**: turn **off** "Allow new users to
-   sign up". Keep the Email provider on.
-3. **Authentication → Users → Add user**: create your account (your email and
-   a strong password, "Auto confirm" on). **The first account ever created
-   becomes the owner.** Any other account can sign in but sees nothing.
+[`docs/app-api.md`](docs/app-api.md) lists every endpoint the app needs, with
+exact request and response shapes. Hand it to whoever works on your backend
+(or to Claude). All of them live under `/app/` so they can't clash with
+anything your backend already does.
 
-### 2. Create the tables
+You don't need all of them on day one. The page has a short
+**"Minimum to get started"** list: sign-in, the brief, approvals and tasks.
+Anything not built yet just shows a plain "not supported yet" message in the
+app.
 
-Install the [Supabase CLI](https://supabase.com/docs/guides/cli), then from
-the `jarvis` folder:
+While you're there, on your backend:
 
-```sh
-supabase login
-supabase link                 # pick your project
-supabase db push --linked     # creates tables, row-level security, functions
-```
+- **Set the owner's email and password.** There is no sign-up screen; only
+  that one account can sign in.
+- **Add your ElevenLabs API key and agent id.** Talk to Jarvis asks your
+  backend for a signed link, and your backend asks ElevenLabs.
+- **Allow the app's address (CORS)**, and limit how often someone can try a
+  password or a code. Both are explained in the doc.
 
-If you created your account *after* this step, that is fine too: the first
-account still becomes the owner. To check or change the owner, run
-`supabase/snippets/set_owner.sql` in the SQL editor.
+### 2. Point the app at your backend
 
-Optional: to see the live app populated before your backend is connected,
-paste `supabase/seed.sql` into the SQL editor. It is sample data.
-
-### 3. Add the secrets and deploy the functions
+Copy `.env.example` to `.env.local` and fill in one line:
 
 ```sh
-supabase secrets set \
-  ELEVENLABS_API_KEY=… \
-  ELEVENLABS_AGENT_ID=… \
-  JARVIS_API_URL=https://your-backend.example.com \
-  JARVIS_API_KEY=… \
-  JARVIS_WEBHOOK_SECRET=…        # optional; falls back to JARVIS_API_KEY
-
-supabase functions deploy
+VITE_JARVIS_API_URL=https://your-jarvis-backend.example.com
 ```
 
-Secrets live only in Supabase. None of them is ever sent to the browser.
-Each one can be added later; until then the matching feature says it is not
-connected (Settings → Connections shows which).
+Restart `npm run dev`. The app now opens on the sign-in screen.
 
-### 4. Point the app at the project
+### 3. Deploy the app
 
-Copy `.env.example` to `.env.local` and fill in the two public values from
-**Project Settings → API**:
+Set the same `VITE_JARVIS_API_URL` on your host (Vercel, Netlify or
+Cloudflare Pages, see *Open it on your phone* above) and redeploy. Open the
+https address on your phone and add it to your home screen.
 
-```sh
-VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_…
-```
-
-Restart `npm run dev` (or set the same two variables on your host and
-redeploy). The app now opens on the sign-in screen.
-
-To sign in with an emailed 6-digit code instead of a password, change the
-**Magic Link** email template (Authentication → Emails) so it contains
-`{{ .Token }}`; `supabase/templates/magic_link.html` has the wording.
-
-### 5. Set up the ElevenLabs agent
-
-In the agent's settings:
+For the voice conversation, in your ElevenLabs agent's settings:
 
 - **Security**: turn on authentication, so a conversation can only start with
-  a signed link from your project. Also allow the **text only** override; the
+  a signed link from your backend. Also allow the **text only** override; the
   typed fallback uses it.
 - **Advanced → Client events**: keep `user_transcript`, `agent_response`,
   `agent_response_correction`, `audio` and `interruption` on. The live
@@ -142,47 +118,32 @@ In the agent's settings:
 
 Talk to Jarvis needs https and microphone permission.
 
-### 6. Connect your Jarvis backend
+### Alternative: Supabase
 
-`docs/backend.md` is the full contract. In short:
-
-- The app sends work to your backend: `POST /tasks`,
-  `POST /tasks/{id}/cancel`, `POST /approvals/{id}/decision`, and
-  `GET /health`, each with `Authorization: Bearer <JARVIS_API_KEY>`.
-- Your backend pushes calls, appointments, task progress, approval requests
-  and alerts into the app through one signed webhook:
-  `https://<project-ref>.supabase.co/functions/v1/jarvis-webhook`.
-
-Try the webhook before writing any backend code:
-
-```sh
-node scripts/send-webhook.mjs \
-  --url https://<project-ref>.supabase.co/functions/v1/jarvis-webhook \
-  --secret "$JARVIS_WEBHOOK_SECRET" --sample all
-```
-
-The sample rows appear in the app within a second. The script is also the
-reference for how to sign a request.
-
-Calls and texts are placed by your backend, not by this app. When your
-backend pushes an alert, the webhook answers with how you asked to be reached
-for that kind of alert (call, text or in-app only, with quiet hours applied).
+The app can also run on a Supabase project instead (tables, sign-in and live
+updates in Supabase, with your backend pushing data in through a webhook).
+That setup is described in [`docs/backend.md`](docs/backend.md); the
+database and functions are in `supabase/`. To use it, leave
+`VITE_JARVIS_API_URL` empty and set `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY` instead. If both are set, the Jarvis backend
+wins.
 
 ## What is real and what is sample data
 
 Everything on screen in demo mode is sample data from `src/services/demo`.
-In live mode nothing is sample data: every screen reads your Supabase tables,
-and they are empty until your backend (or `supabase/seed.sql`) fills them.
+In live mode nothing is sample data: every screen asks your Jarvis backend,
+and shows only what it sends back.
 
 | Area | Live mode | Waiting on you |
 | --- | --- | --- |
-| Sign-in, row-level security | Real | Create your account |
-| Talk to Jarvis | Real ElevenLabs conversation through a signed link | ElevenLabs key and agent id |
-| Brief, shops, calls, appointments | Real tables, live updates | Your backend pushing through the webhook |
-| Tasks, approvals | Real tables; sent to your backend | `JARVIS_API_URL`, `JARVIS_API_KEY`, backend endpoints |
-| Alerts and how you are reached | Stored and routed by your preferences | Your backend placing the call or text |
-| Handbook, decisions | Real, editable | Notion sync is not built; `notion_page_id` is ready for it |
-| Connection status | Real checks from an edge function | Twilio and Notion keys are optional |
+| Sign-in | Real: email and password, or a 6-digit code by email, checked by your backend | Sign-in endpoints and the owner's account on your backend |
+| Talk to Jarvis | Real ElevenLabs conversation through a signed link | ElevenLabs key and agent id on your backend, `/app/voice/session` |
+| Brief, shops, calls, appointments | Real, from your backend | The Home and Receptionist endpoints |
+| Tasks, approvals | Real: started, cancelled and approved through your backend | The Code and approval endpoints, and your task runner |
+| Alerts and how you are reached | Shown in the app; your backend places the call or text | Alert endpoints; your backend routing by your preferences |
+| Handbook, decisions | Real, editable, saved by your backend | The Memory endpoints. Notion sync is not built; `notion_page_id` is ready for it |
+| Connection status | Whatever your backend reports for each service | `/app/connections` |
+| Live updates | Changes appear within a second | `/app/events` (until then, screens refresh when you open them) |
 
 ## How it is put together
 
@@ -191,15 +152,17 @@ src/
   lib/types.ts            the data model (mirrors the database tables)
   services/types.ts       the one service interface every screen uses
   services/demo/          sample data + simulator (demo mode)
-  services/live/          Supabase: tables, realtime, edge functions
+  services/jarvis/        your Jarvis backend: fetch client, sign-in, live updates
+  services/live/          Supabase alternative: tables, realtime, edge functions
   services/hooks.ts       data hooks used by the screens
   features/               home, voice, receptionist, code, memory, settings, auth
   components/             shared UI
-supabase/
+supabase/                 (Supabase alternative only)
   migrations/             tables, row-level security, database functions
   functions/              elevenlabs-signed-url, jarvis-command, connection-status, jarvis-webhook
   seed.sql                optional sample data
-docs/backend.md           the contract for your Jarvis backend
+docs/app-api.md           the endpoints your Jarvis backend answers for the app
+docs/backend.md           the Supabase alternative's contract
 ```
 
 To put a different backend behind the app, implement `JarvisService`

@@ -599,7 +599,7 @@ describe('Account', () => {
 
     expect(
       screen.getByText(
-        'Demo mode. You are looking at sample data and nothing is saved. Add your Supabase keys to go live.',
+        'Demo mode. You are looking at sample data and nothing is saved. Connect your Jarvis backend to go live.',
       ),
     ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()

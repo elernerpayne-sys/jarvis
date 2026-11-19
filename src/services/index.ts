@@ -1,16 +1,30 @@
 /**
  * The single entry point for data. Import `api` and nothing else.
  *
- * Demo mode (no Supabase keys) gets the in-memory sample service. Otherwise
- * the app talks to Supabase. To put another backend behind the app, return a
- * different `JarvisService` here.
+ *   VITE_JARVIS_API_URL set  → your own Jarvis backend (services/jarvis)
+ *   Supabase keys set        → Supabase (services/live)
+ *   nothing set              → demo mode, sample data (services/demo)
+ *
+ * To put another backend behind the app, return a different `JarvisService` here.
  */
-import { IS_DEMO } from '@/lib/env'
+import { BACKEND, JARVIS_API_URL } from '@/lib/env'
 import { createDemoService } from '@/services/demo'
+import { createJarvisBackendService } from '@/services/jarvis'
 import { createLiveService } from '@/services/live'
 import type { JarvisService } from '@/services/types'
 
-export const api: JarvisService = IS_DEMO ? createDemoService() : createLiveService()
+function createService(): JarvisService {
+  switch (BACKEND) {
+    case 'jarvis':
+      return createJarvisBackendService(JARVIS_API_URL)
+    case 'supabase':
+      return createLiveService()
+    case 'demo':
+      return createDemoService()
+  }
+}
+
+export const api: JarvisService = createService()
 
 export type { AuthApi, AuthUser, JarvisService } from '@/services/types'
 export { ServiceError, errorMessage, isNotFound, isServiceError } from '@/services/errors'

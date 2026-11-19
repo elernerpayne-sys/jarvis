@@ -1,9 +1,10 @@
 /**
  * The one service layer.
  *
- * Every screen talks to `JarvisService` and nothing else. There are two
+ * Every screen talks to `JarvisService` and nothing else. There are three
  * implementations:
  *   - services/demo  → sample data held in memory, with a small simulator
+ *   - services/jarvis → your own Jarvis backend (docs/app-api.md)
  *   - services/live  → Supabase (tables + realtime + edge functions)
  *
  * To put a different backend behind the app, implement this interface and
@@ -58,7 +59,7 @@ export interface AuthApi {
  * `message` is safe to show to the owner.
  */
 export interface JarvisService {
-  /** "demo" when no Supabase keys are set: sample data, no login. */
+  /** "demo" when no backend is configured: sample data, no login. */
   readonly mode: 'demo' | 'live'
   readonly auth: AuthApi
 

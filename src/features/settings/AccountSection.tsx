@@ -49,7 +49,7 @@ export function AccountSection() {
     <Section title="Account">
       {api.mode === 'demo' ? (
         <p className="text-base text-ash">
-          Demo mode. You are looking at sample data and nothing is saved. Add your Supabase keys to go live.
+          Demo mode. You are looking at sample data and nothing is saved. Connect your Jarvis backend to go live.
         </p>
       ) : (
         <div className="space-y-4">
