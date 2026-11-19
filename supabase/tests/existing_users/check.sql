@@ -12,3 +12,7 @@ select test.is((select count(*) from public.settings), 1::bigint, 'the owner see
 select test.as_user('00000000-0000-4000-8000-0000000000a2');
 select test.is((select count(*) from public.settings), 0::bigint, 'the second account sees nothing');
 select test.as_admin();
+
+select test.is(
+  (select string_agg(tablename, ',' order by tablename) from pg_publication_tables where pubname = 'supabase_realtime'),
+  'alerts,appointments,approvals,calls,task_events,tasks', 'the migration created the missing publication with the six tables');

@@ -10,7 +10,9 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "test:db": "supabase/tests/run.sh",
+    "test:functions": "cd supabase/functions && deno test --no-lock tests/"
   },
   "dependencies": {
     "@elevenlabs/react": "^1.23.1",

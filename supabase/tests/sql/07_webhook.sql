@@ -82,7 +82,7 @@ select test.is(pg_temp.ev('task.update', '{"task_id":"00000000-0000-4000-8000-00
 
 -- task.event ---------------------------------------------------------------
 select test.is(pg_temp.ev('task.event', '{"task_external_id":"JT1","kind":"command","message":"npm test"}') ->> 'ok', 'true', 'task.event by external id');
-select test.is(pg_temp.ev('task.event', '{"task_id":"00000000-0000-4000-8000-0000000000f1","kind":"log","message":"hi","created_at":"2030-01-01T00:00:05Z"}') ->> 'ok',
+select test.is(pg_temp.ev('task.event', '{"task_id":"00000000-0000-4000-8000-0000000000f1","kind":"log","message":"hi","created_at":"2020-01-01T00:00:05Z"}') ->> 'ok',
   'true', 'task.event by id with created_at');
 select test.is((select string_agg(kind || ':' || message, ',' order by created_at) from public.task_events where task_id = '00000000-0000-4000-8000-0000000000f1'),
   'log:hi,command:npm test', 'both lines were logged with their times');

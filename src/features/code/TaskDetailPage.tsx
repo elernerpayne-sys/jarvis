@@ -67,7 +67,10 @@ function TaskApproval({ taskId }: { taskId: string }) {
         const forThisTask = approvals.filter((approval) => approval.task_id === taskId)
         if (forThisTask.length === 0) return <p className="text-ash">Waiting for your approval.</p>
         return (
-          <div className="space-y-4">
+          // ApprovalCard sets Deny and Approve side by side as full-width
+          // buttons that refuse to shrink, so together they overflow the card.
+          // Let them share the row until the shared card is fixed.
+          <div className="space-y-4 [&_button.w-full]:min-w-0 [&_button.w-full]:shrink">
             {forThisTask.map((approval) => (
               <ApprovalCard key={approval.id} approval={approval} showTaskLink={false} />
             ))}

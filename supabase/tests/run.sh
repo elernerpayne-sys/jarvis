@@ -29,12 +29,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-new_db() {
+new_db() { # suffix → sets NEW_DB to its URL (not run in a subshell, so cleanup sees it)
   local name="jarvis_test_$$_$1"
   "${PSQL[@]}" "$SERVER/postgres" -c "drop database if exists $name with (force)" >/dev/null 2>&1
-  "${PSQL[@]}" "$SERVER/postgres" -c "create database $name" >/dev/null
   throwaway+=("$name")
-  echo "$SERVER/$name"
+  "${PSQL[@]}" "$SERVER/postgres" -c "create database $name" >/dev/null
+  NEW_DB="$SERVER/$name"
 }
 
 apply() { # url file [label]
@@ -48,7 +48,7 @@ apply() { # url file [label]
 if [ -n "${DATABASE_URL:-}" ]; then
   DB="$DATABASE_URL"
 else
-  DB="$(new_db main)"
+  new_db main; DB="$NEW_DB"
 fi
 
 apply "$DB" "$HERE/supabase_shim.sql" "the Supabase stand-in"
@@ -77,7 +77,7 @@ for f in "$HERE"/sql/*.sql; do run_file "$DB" "$f"; done
 
 # Accounts that exist before the migration: the earliest real one is the owner.
 if [ -z "${DATABASE_URL:-}" ]; then
-  DB2="$(new_db existing)"
+  new_db existing; DB2="$NEW_DB"
   apply "$DB2" "$HERE/supabase_shim.sql" "the Supabase stand-in"
   apply "$DB2" "$HERE/existing_users/setup.sql" "existing users"
   for m in "$ROOT"/migrations/*.sql; do apply "$DB2" "$m" "migration $(basename "$m")"; done

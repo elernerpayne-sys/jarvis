@@ -34,7 +34,8 @@ function CallRow({ call, now, onOpen }: { call: CallSummary; now: Date; onOpen: 
         </span>
       }
       title={callerLabel(call)}
-      subtitle={call.summary ?? undefined}
+      // Clamped here: ListRow's own `block` class cancels its `line-clamp-2`.
+      subtitle={call.summary ? <span className="line-clamp-2">{call.summary}</span> : undefined}
       trailing={
         <>
           <time dateTime={call.started_at} className="block">

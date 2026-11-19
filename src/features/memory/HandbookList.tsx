@@ -3,7 +3,7 @@ import { useId } from 'react'
 import { formatRelative } from '@/lib/format'
 import type { HandbookEntry } from '@/lib/types'
 import { List, ListRow } from '@/components/ui/List'
-import { RowExcerpt } from '@/features/memory/RowExcerpt'
+import { RowExcerpt, RowTitle } from '@/features/memory/RowExcerpt'
 import { NO_CATEGORY, groupByCategory } from '@/features/memory/handbook'
 import type { CategoryGroup } from '@/features/memory/handbook'
 
@@ -25,7 +25,7 @@ function CategorySection({
           <ListRow
             key={entry.id}
             onClick={() => onOpen(entry)}
-            title={entry.title}
+            title={<RowTitle text={entry.title} />}
             subtitle={<RowExcerpt text={entry.content} />}
             trailing={<time dateTime={entry.updated_at}>{formatRelative(entry.updated_at)}</time>}
           />

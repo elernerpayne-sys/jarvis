@@ -31,17 +31,18 @@ function AlertRow({ alert, onPress }: { alert: Alert; onPress: () => void }) {
       onClick={onPress}
       leading={<Dot tone={ALERT_TONE[alert.type]} className={cn('mt-1', !unread && 'opacity-40')} />}
       title={
-        // Up to two lines: the title is the alert, so it should not be cut to
-        // one. Weight as well as colour marks unread, for those who cannot
-        // tell the two greys apart.
-        <span className={cn('line-clamp-2 whitespace-normal', unread ? 'font-medium text-bone' : 'text-ash')}>
+        // Wrapped in full: the alert is short and the owner should not have
+        // to open it to read it. Weight as well as colour marks unread, for
+        // those who cannot tell the two greys apart.
+        <span className={cn('block whitespace-normal', unread ? 'font-medium text-bone' : 'text-ash')}>
           {unread ? <span className="sr-only">Unread. </span> : null}
           {alert.title}
         </span>
       }
-      subtitle={alert.body ?? undefined}
       trailing={<time dateTime={alert.created_at}>{formatRelative(alert.created_at)}</time>}
     >
+      {/* The body goes here rather than in `subtitle`, which clips to two lines. */}
+      {alert.body ? <span className="mt-0.5 block text-sm text-ash">{alert.body}</span> : null}
       <span className="mt-1 block text-sm text-smoke">{REACHED_BY[alert.channel]}</span>
     </ListRow>
   )
