@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 
 import { useAuth } from '@/app/AuthProvider'
+import { holdUpdates } from '@/lib/updates'
 import { api } from '@/services'
 import { INERT_CONTROLLER, VoiceContext } from '@/features/voice/context'
 import { useDemoEngine } from '@/features/voice/demo/useDemoEngine'
@@ -19,6 +20,18 @@ export type EngineLoader = () => Promise<{ default: EngineComponent }>
 const loadElevenLabsEngine: EngineLoader = () => import('@/features/voice/elevenlabs/ElevenLabsEngine')
 
 function nothing() {}
+
+/**
+ * The installed app reloads itself into a new version at a quiet moment.
+ * A conversation that is opening or live is never a quiet moment.
+ */
+function useHoldUpdatesWhile(busy: boolean) {
+  useEffect(() => (busy ? holdUpdates() : undefined), [busy])
+}
+
+function isBusy(controller: VoiceController | null): boolean {
+  return controller?.status === 'connecting' || controller?.status === 'live'
+}
 
 /**
  * Runs `task` once the browser has painted and has a moment to spare.
@@ -51,6 +64,7 @@ export function VoiceProvider({ children }: { children: ReactNode }) {
 
 function DemoVoiceProvider({ children }: { children: ReactNode }) {
   const controller = useDemoEngine()
+  useHoldUpdatesWhile(isBusy(controller))
   const value = useMemo<VoiceContextValue>(
     () => ({ controller, engine: 'ready', reloadEngine: nothing, needsNetwork: false }),
     [controller],
@@ -79,6 +93,7 @@ export function LiveVoiceProvider({
   const [controller, setController] = useState<VoiceController | null>(null)
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  useHoldUpdatesWhile(isBusy(controller))
 
   useEffect(() => {
     let wanted = true

@@ -105,7 +105,8 @@ function planToday(profile: ShopProfile, now: Date, rng: Random): Planned[] {
   const wellUnderWay = now.getTime() >= open.getTime() + 2 * HOUR
   const from = wellUnderWay ? open.getTime() + 5 * MINUTE : Math.min(dayStart + MINUTE, latest)
   const [fewest, most] = profile.callsToday
-  const wanted = wellUnderWay ? rng.int(fewest, most) : fewest
+  // Before the shop has really got going, only a few calls have come in.
+  const wanted = wellUnderWay ? rng.int(fewest, most) : Math.max(3, Math.ceil(fewest / 3))
   const count = Math.min(wanted, Math.max(2, Math.floor((latest - from) / (4 * MINUTE))))
 
   // Most calls come while the shop is open; a few after closing.

@@ -64,7 +64,8 @@ function lateFeeApproval(late: LateCancellation): ApprovalDraft {
     shop_id: call.shop_id,
     status: 'pending',
     requestedAt: askedAt,
-    expiresAt: addMinutes(askedAt, 12 * 60),
+    // He was promised an answer the same day; leave room for the owner to see it.
+    expiresAt: addMinutes(askedAt, 48 * 60),
   }
 }
 
