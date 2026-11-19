@@ -1,7 +1,7 @@
 /** Which backend the app picks from its build settings (lib/env.ts, services/index.ts). */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { chooseBackend } from '@/lib/env'
+import { chooseBackend, jarvisBaseUrl } from '@/lib/env'
 
 const NOTHING = {
   VITE_JARVIS_API_URL: '',
@@ -50,6 +50,18 @@ describe('choosing the backend', () => {
     })
     expect(settings.BACKEND).toBe('jarvis')
     expect(settings.JARVIS_API_URL).toBe('https://jarvis.example.com')
+    expect(settings.IS_DEMO).toBe(false)
+    expect(api.mode).toBe('live')
+  })
+
+  it('talks to the site it is served from when set to same-origin', async () => {
+    expect(jarvisBaseUrl('same-origin')).toBe('')
+    expect(jarvisBaseUrl(' Same-Origin ')).toBe('')
+    expect(jarvisBaseUrl('/')).toBe('')
+    expect(jarvisBaseUrl('https://jarvis.example.com///')).toBe('https://jarvis.example.com')
+    const { settings, api } = await loadWith({ VITE_JARVIS_API_URL: 'same-origin' })
+    expect(settings.BACKEND).toBe('jarvis')
+    expect(settings.JARVIS_API_URL).toBe('')
     expect(settings.IS_DEMO).toBe(false)
     expect(api.mode).toBe('live')
   })

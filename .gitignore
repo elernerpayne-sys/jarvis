@@ -35,3 +35,6 @@ dev-dist
 supabase/.temp
 supabase/.branches
 supabase/functions/.env
+
+# Jarvis server data (the SQLite file with your account and everything else)
+/data

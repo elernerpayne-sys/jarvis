@@ -7,9 +7,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "build:server-app": "VITE_JARVIS_API_URL=same-origin npm run build",
+    "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env.local server/src/main.ts",
+    "dev:server": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env.local --watch server/src/main.ts",
+    "owner": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env.local server/scripts/owner.ts",
+    "seed": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env.local server/scripts/seed.ts",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:server": "node --disable-warning=ExperimentalWarning --test --test-concurrency=1 \"server/test/**/*.test.ts\"",
     "lint": "oxlint",
     "test:db": "supabase/tests/run.sh",
     "test:functions": "cd supabase/functions && deno test --no-lock tests/"
@@ -43,5 +49,8 @@
     "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.1.1",
     "workbox-window": "^7.4.1"
+  },
+  "engines": {
+    "node": ">=22.18"
   }
 }

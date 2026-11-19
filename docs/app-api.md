@@ -13,9 +13,16 @@ Your backend holds every secret (the ElevenLabs key, the owner's password,
 everything). The app only ever knows your backend's address and the owner's
 session token.
 
-`src/services/jarvis/testing/referenceServer.ts` is a small working version of
-this whole contract (in memory, used by the app's tests). Read it alongside
-this page if anything here is unclear.
+**`server/` in this repo is a complete Jarvis backend that implements every
+endpoint here** (one Node service with a SQLite file; see the README's
+"Go live" and [`docs/runner.md`](runner.md) for the task runner and the
+webhooks that feed it). It also serves the built app from the same address,
+in which case build the app with `VITE_JARVIS_API_URL=same-origin`: requests
+then go to the site's own `/app/…` and no CORS is involved.
+
+`src/services/jarvis/testing/referenceServer.ts` is a small in-memory version
+of this contract used by the app's tests. Read either alongside this page if
+anything here is unclear.
 
 ## Contents
 
@@ -33,7 +40,9 @@ this page if anything here is unclear.
 
 - **Every path starts with `/app/`**, so nothing here collides with routes
   your backend already has. With `VITE_JARVIS_API_URL=https://jarvis.example.com`
-  the brief is `GET https://jarvis.example.com/app/brief`.
+  the brief is `GET https://jarvis.example.com/app/brief`; with
+  `VITE_JARVIS_API_URL=same-origin` it is `GET /app/brief` on the site the app
+  was loaded from.
 - **JSON everywhere.** Requests with a body send `Content-Type: application/json`.
   Answer with `Content-Type: application/json`, or with `204 No Content` and
   no body where this page says so.
@@ -94,7 +103,10 @@ One owner. There is no sign-up, and nothing here may ever create an account.
   *any* email, including ones that aren't the owner, so the screen never
   reveals which address is the owner's. Only actually send to the owner. A
   code is good for 10 minutes and for one sign-in. The app strips spaces
-  before sending it.
+  before sending it. If your backend has no way to send email, answer `503`
+  `not_configured` with a sentence such as "Email codes aren’t set up on this
+  Jarvis yet. Sign in with your password." (the same for every address); the
+  sign-in screen shows it.
 - **verify**: wrong or expired code → `401` with code `unauthorized` and a
   message such as "That code is wrong or has expired. Ask for a new one."
 - **me**: who the token belongs to. The app calls it once when it opens to
@@ -177,6 +189,10 @@ isn't `approved` or `denied` → `400`. On success set `status` and
 
 - approved → the task goes back to `running`, plus a `status` task event "Approved by you"
 - denied → the task becomes `cancelled` with `finished_at = now`, plus a `status` task event "Denied by you"
+
+If something else has to hear the answer first (the task runner that asked,
+see [`docs/runner.md`](runner.md)) and it can't be reached, record nothing
+and answer `502` `upstream` with a sentence saying so; the owner can try again.
 
 **Alerts** are newest first by `created_at`. Marking one read sets `read_at =
 now` only if it is still `null` (the first time it was read is kept); unknown
@@ -390,9 +406,11 @@ server is better).
 
 ## CORS
 
-The app runs on its own address (for example `https://jarvis-app.vercel.app`),
-so the browser asks your backend for permission first. For every `/app/`
-route:
+Not needed when the backend serves the app itself (`same-origin`, as
+`server/` does). Only when the app runs on its own address (for example
+`https://jarvis-app.vercel.app`) does the browser ask your backend for
+permission first. Then, for every `/app/` route (`server/` does this for the
+addresses listed in `ALLOWED_ORIGINS`):
 
 - Answer `OPTIONS` preflight requests with `204` and no authentication check.
 - Send these headers on every answer (including errors and the event stream):
