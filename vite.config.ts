@@ -6,6 +6,10 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vitest/config'
 
+// HTTPS tunnels used to open the app on a phone (the microphone and
+// "Add to Home Screen" both need https).
+const TUNNEL_HOSTS = ['.trycloudflare.com', '.ngrok-free.app', '.ngrok.app', '.ngrok.io']
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -54,8 +58,9 @@ export default defineConfig({
   server: {
     // Listen on the local network so the phone can open the dev server.
     host: true,
+    allowedHosts: TUNNEL_HOSTS,
   },
-  preview: { host: true },
+  preview: { host: true, allowedHosts: TUNNEL_HOSTS },
   test: {
     environment: 'jsdom',
     globals: false,

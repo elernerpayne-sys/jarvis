@@ -87,6 +87,58 @@ get_shop_summaries(p_from timestamptz, p_to timestamptz)
 - tasks finished: tasks with status `done` and `finished_at` in range
 - next appointment: the earliest appointment from now on with status `booked` or `confirmed`
 
+### Internal functions (service role only)
+
+Everything that writes on Jarvis's behalf is a Postgres function, so each
+change is atomic and can be tested against a real database. Only the service
+role may execute them; the app cannot call them. Edge functions verify who is
+asking, talk to the outside world, and then call these.
+
+```
+jarvis_create_task(p_repo text, p_instructions text) → tasks
+  Checks p_repo is in settings.allowed_repos and p_instructions is 1–8000
+  characters after trimming. Inserts the task as 'queued' with a title taken
+  from the first line of the instructions (cut at a word boundary, 72
+  characters, with an ellipsis when cut) and logs a 'status' event "Queued".
+
+jarvis_record_dispatch(p_task_id uuid, p_outcome text, p_external_id text, p_detail text) → tasks
+  What happened when the task was handed to the Jarvis backend. p_outcome:
+    'accepted'        stores p_external_id (may be null), logs "Sent to Jarvis."
+    'not_configured'  task stays queued, logs "Jarvis backend isn't connected
+                      yet. This task will wait in the queue."
+    'rejected'        task becomes 'failed' with error = p_detail and
+                      finished_at = now, logs an 'error' event with p_detail.
+
+jarvis_cancel_task(p_task_id uuid) → tasks
+  Only while 'queued', 'running' or 'needs_approval'. Sets 'cancelled' and
+  finished_at, marks the task's pending approvals 'expired', logs a 'status'
+  event "Cancelled by you".
+
+jarvis_decide_approval(p_approval_id uuid, p_decision text) → approvals
+  Only while 'pending'. p_decision is 'approved' or 'denied'. Sets status and
+  decided_at. If the approval's task is 'needs_approval': approved → task
+  'running' + 'status' event "Approved by you"; denied → task 'cancelled',
+  finished_at = now + 'status' event "Denied by you".
+
+jarvis_apply_events(p_events jsonb) → jsonb
+  The webhook's work. p_events is the array of { "type", "data" } objects
+  (already shape-checked by the edge function). Applies them in order, each
+  in its own sub-transaction, and returns the "results" array described under
+  "Webhook: Response" — including "notify" for alert.create.
+```
+
+Errors are raised with these SQLSTATE codes so callers can tell them apart;
+the message is a sentence that is safe to show the owner:
+
+| SQLSTATE | Meaning | Edge function answers |
+| --- | --- | --- |
+| `JV404` | The task or approval does not exist | 404 `not_found` |
+| `JV400` | The input is not acceptable (repo not allowed, empty instructions, bad decision) | 400 `invalid` |
+| `JV409` | Too late: the task is already finished, or the approval already decided | 409 `invalid` |
+
+Inside `jarvis_apply_events` a failing event does not raise: its entry in the
+results is `{ "ok": false, "error": "<the message>" }`.
+
 ## Edge functions the app calls
 
 All three need the owner's session (`Authorization: Bearer <user JWT>`, sent

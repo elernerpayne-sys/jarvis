@@ -10,9 +10,11 @@ function read(value: unknown): string {
 
 export const SUPABASE_URL = read(import.meta.env.VITE_SUPABASE_URL)
 
-/** Either name works: the newer publishable key or the legacy anon key. */
+/** Any of these names works: the newer publishable key or the legacy anon key. */
 export const SUPABASE_KEY =
-  read(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) || read(import.meta.env.VITE_SUPABASE_ANON_KEY)
+  read(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) ||
+  read(import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY) ||
+  read(import.meta.env.VITE_SUPABASE_ANON_KEY)
 
 /**
  * Demo mode: sample data, no login. It is on ONLY when no Supabase keys are

@@ -55,12 +55,19 @@ export function Sheet({ open, onClose, title, description, children, footer, bus
     if (event.target === ref.current && !busy) onClose()
   }
 
+  // Some browsers let a second Escape close the dialog on their own. If that
+  // happens while we still think it is open, catch up.
+  function handleNativeClose() {
+    if (open) onClose()
+  }
+
   return (
     <dialog
       ref={ref}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       onCancel={handleCancel}
+      onClose={handleNativeClose}
       onClick={handleBackdrop}
       className={cn(
         'm-0 mt-auto max-h-[92dvh] w-full max-w-none flex-col overflow-hidden p-0 text-bone',

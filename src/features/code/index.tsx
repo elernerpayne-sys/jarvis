@@ -1,10 +1,18 @@
-import { Page } from '@/components/ui/Page'
+import { Navigate, Route, Routes } from 'react-router'
 
-/** Placeholder: replaced by the real screen. */
-export default function Placeholder() {
+import { routes } from '@/lib/links'
+import { NewTaskPage } from '@/features/code/NewTaskPage'
+import { TaskDetailPage } from '@/features/code/TaskDetailPage'
+import { TaskListPage } from '@/features/code/TaskListPage'
+
+/** The Code tab: every task, the form that starts one, and one task up close. */
+export default function Code() {
   return (
-    <Page title="Code">
-      <p className="text-ash">This screen is not built yet.</p>
-    </Page>
+    <Routes>
+      <Route index element={<TaskListPage />} />
+      <Route path="new" element={<NewTaskPage />} />
+      <Route path=":taskId" element={<TaskDetailPage />} />
+      <Route path="*" element={<Navigate to={routes.code} replace />} />
+    </Routes>
   )
 }
