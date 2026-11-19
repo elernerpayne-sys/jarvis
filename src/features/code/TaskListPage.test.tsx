@@ -58,7 +58,7 @@ describe('Code: task list', () => {
 
     const row = await screen.findByRole('link', { name: /Fix the double booking/ })
     expect(row).toHaveAttribute('href', '/code/run')
-    expect(within(row).getByText('acme/booking-site')).toBeInTheDocument()
+    expect(row).toHaveTextContent('acme/booking-site')
     expect(within(row).getByText('Running')).toBeInTheDocument()
     expect(within(row).getByText('10m ago')).toBeInTheDocument()
   })

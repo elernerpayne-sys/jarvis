@@ -72,38 +72,33 @@ export function TalkPanel() {
         {statusLine}
       </p>
 
-      {/* One row of controls. Its height is kept so the page below stays put. */}
-      <div className="mt-3 flex min-h-12 items-center justify-center gap-3">
-        {status === 'live' && channel === 'voice' ? (
-          <Button
-            aria-pressed={muted}
-            icon={muted ? <MicOff aria-hidden className="size-4" /> : <Mic aria-hidden className="size-4" />}
-            onClick={() => controller.setMuted(!muted)}
-            className="min-w-28"
-          >
-            {muted ? 'Unmute' : 'Mute'}
-          </Button>
-        ) : null}
-        {status === 'live' ? (
-          <Button onClick={controller.stop} className="min-w-28">
-            End
-          </Button>
-        ) : null}
-        {!busy && !showComposer ? (
-          <Button
-            variant="ghost"
-            icon={<Keyboard aria-hidden className="size-4" />}
-            onClick={() => setWantsToType(true)}
-          >
-            Type instead
-          </Button>
-        ) : null}
-        {!busy && hasTranscript ? (
-          <Button variant="ghost" onClick={controller.clear}>
-            Clear
-          </Button>
-        ) : null}
-      </div>
+      {/* While a conversation runs: End, and Mute when it is spoken. Mute is
+          shown (disabled) while a spoken one connects, so the row never
+          shifts sideways when it goes live. */}
+      {busy || hasTranscript ? (
+        <div className="mt-3 flex min-h-12 items-center justify-center gap-3">
+          {inVoice ? (
+            <Button
+              aria-pressed={muted}
+              disabled={status !== 'live'}
+              icon={muted ? <MicOff aria-hidden className="size-4" /> : <Mic aria-hidden className="size-4" />}
+              onClick={() => controller.setMuted(!muted)}
+              className="min-w-28"
+            >
+              {muted ? 'Unmute' : 'Mute'}
+            </Button>
+          ) : null}
+          {busy ? (
+            <Button onClick={controller.stop} className="min-w-28">
+              End
+            </Button>
+          ) : (
+            <Button variant="ghost" onClick={controller.clear}>
+              Clear
+            </Button>
+          )}
+        </div>
+      ) : null}
 
       {problem ? (
         <div className="mt-3 flex max-w-sm flex-col items-center gap-3">
@@ -119,6 +114,8 @@ export function TalkPanel() {
         <Transcript lines={transcript} thinking={thinking} className="mt-6 w-full max-w-md" />
       ) : null}
 
+      {/* "Type instead" and the field it opens share one slot, so opening
+          the composer moves nothing. */}
       {showComposer ? (
         <Composer
           // Asked for by pressing "Type instead": put the cursor straight in.
@@ -128,7 +125,16 @@ export function TalkPanel() {
           onTyping={controller.typing}
           className="mt-5 w-full max-w-md"
         />
-      ) : null}
+      ) : (
+        <Button
+          variant="ghost"
+          icon={<Keyboard aria-hidden className="size-4" />}
+          onClick={() => setWantsToType(true)}
+          className="mt-5"
+        >
+          Type instead
+        </Button>
+      )}
     </section>
   )
 }

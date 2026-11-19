@@ -209,7 +209,7 @@ describe('Sign in', () => {
       expect(code).toHaveValue('123')
       await user.click(screen.getByRole('button', { name: 'Verify code' }))
 
-      expect(code).toHaveAccessibleDescription(/The code is 6 digits\./)
+      expect(code).toHaveAccessibleDescription(/Enter all 6 digits of the code\./)
       expect(code).toHaveValue('123')
       expect(auth.verifyEmailCode).not.toHaveBeenCalled()
     })

@@ -114,7 +114,7 @@ export function CodeForm({
   return (
     <form onSubmit={(event) => void handleVerify(event)} noValidate className="space-y-5">
       <p id={sentNoteId} className="text-base text-ash">
-        We sent a 6-digit code to <span className="break-all text-bone">{sentTo}</span>.
+        We sent a 6-digit code to <span className="text-bone [overflow-wrap:anywhere]">{sentTo}</span>.
       </p>
       <Field label="Code" error={problem}>
         {(control) => (

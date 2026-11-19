@@ -297,7 +297,7 @@ describe('Notifications', () => {
       await user.tab()
 
       expect(field).toBeInvalid()
-      expect(field).toHaveAccessibleDescription(/Use only digits/)
+      expect(field).toHaveAccessibleDescription(/only have digits/)
       expect(field).toHaveValue('call the shop')
       expect(service.updateSettings).not.toHaveBeenCalled()
     })

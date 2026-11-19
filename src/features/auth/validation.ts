@@ -18,7 +18,7 @@ export const CODE_LENGTH = 6
 
 export function codeProblem(code: string): string | null {
   if (code === '') return 'Enter the code from the email.'
-  if (!/^\d{6}$/.test(code)) return 'The code is 6 digits.'
+  if (!/^\d{6}$/.test(code)) return 'Enter all 6 digits of the code.'
   return null
 }
 

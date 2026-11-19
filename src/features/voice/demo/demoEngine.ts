@@ -256,7 +256,9 @@ export function createDemoEngine({
       const elapsed = now() - modeSince
       if (state.mode === 'speaking') return speechLevel(elapsed)
       if (state.muted) return 0
-      return mic ? mic.level() : idleLevel(elapsed)
+      // A quiet room still shows a soft swell, so listening never looks switched off.
+      const room = idleLevel(elapsed)
+      return mic ? Math.max(mic.level(), room) : room
     },
   }
 }

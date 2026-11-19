@@ -56,7 +56,7 @@ export function AccountSection() {
           <p className="text-base text-ash">
             {auth.user?.email ? (
               <>
-                Signed in as <span className="break-all text-bone">{auth.user.email}</span>
+                Signed in as <span className="text-bone [overflow-wrap:anywhere]">{auth.user.email}</span>
               </>
             ) : (
               'Signed in.'

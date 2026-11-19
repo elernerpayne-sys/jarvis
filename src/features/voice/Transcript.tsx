@@ -48,7 +48,7 @@ export function Transcript({
       tabIndex={0}
       onScroll={handleScroll}
       className={cn(
-        'max-h-[40vh] overflow-y-auto overscroll-contain rounded-xl text-left lg:max-h-80',
+        'max-h-[40vh] overflow-y-auto overscroll-contain rounded-xl text-left lg:max-h-[30vh]',
         className,
       )}
     >

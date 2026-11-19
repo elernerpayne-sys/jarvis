@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Trash2 } from 'lucide-react'
 
+import { cn } from '@/lib/cn'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Form'
 import { List } from '@/components/ui/List'
@@ -10,6 +11,18 @@ import { ConfirmDialog } from '@/components/ui/Sheet'
 import { EmptyState } from '@/components/ui/States'
 import { parseRepo } from '@/features/settings/repos'
 import type { SaveSettings } from '@/features/settings/useSettingsEditor'
+
+/** "owner/name", allowed to wrap after the slash before it breaks inside a word. */
+function RepoName({ repo, className }: { repo: string; className?: string }) {
+  const slash = repo.indexOf('/') + 1
+  return (
+    <span className={cn('min-w-0 font-mono [overflow-wrap:anywhere]', className)}>
+      {repo.slice(0, slash)}
+      <wbr />
+      {repo.slice(slash)}
+    </span>
+  )
+}
 
 function AddRepoForm({ repos, save }: { repos: readonly string[]; save: SaveSettings }) {
   const [draft, setDraft] = useState('')
@@ -80,7 +93,7 @@ export function ReposSection({ repos, save }: { repos: readonly string[]; save: 
         <List>
           {repos.map((repo) => (
             <li key={repo} className="flex min-h-16 items-center justify-between gap-3 py-2">
-              <span className="min-w-0 break-all font-mono text-sm text-bone">{repo}</span>
+              <RepoName repo={repo} className="text-sm text-bone" />
               <IconButton label={`Remove ${repo}`} onClick={() => askToRemove(repo)} className="-mr-3">
                 <Trash2 aria-hidden className="size-5" />
               </IconButton>
@@ -97,7 +110,7 @@ export function ReposSection({ repos, save }: { repos: readonly string[]; save: 
         body={
           <>
             Jarvis won’t start new coding tasks in{' '}
-            <span className="break-all font-mono text-sm text-bone">{removing}</span>. Tasks already under way keep
+            {removing ? <RepoName repo={removing} className="text-sm text-bone" /> : null}. Tasks already under way keep
             going.
           </>
         }

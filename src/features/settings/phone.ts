@@ -7,7 +7,8 @@ export type PhoneResult =
   | { ok: true; value: string | null }
   | { ok: false; error: string }
 
-const EXAMPLE = '+1 512 555 0142'
+// No-break spaces keep the example number on one line when the error wraps.
+const EXAMPLE = '+1\u00a0512\u00a0555\u00a00142'
 
 /**
  * "(512) 555-0142" → "+15125550142". Ten digits with no country code are
@@ -18,7 +19,7 @@ export function normalizePhone(input: string): PhoneResult {
   if (text === '') return { ok: true, value: null }
 
   if (!/^\+?[\d\s()-]+$/.test(text)) {
-    return { ok: false, error: `Use only digits, spaces and dashes, like ${EXAMPLE}.` }
+    return { ok: false, error: `A number can only have digits, spaces, dashes and parentheses, like ${EXAMPLE}.` }
   }
 
   const digits = text.replace(/\D/g, '')
