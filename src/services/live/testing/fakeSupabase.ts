@@ -292,3 +292,9 @@ export type FakeSupabase = ReturnType<typeof createFakeSupabase>
 export async function flush(): Promise<void> {
   for (let turn = 0; turn < 5; turn += 1) await Promise.resolve()
 }
+
+/**
+ * The one fake a test file shares with its `vi.mock('@supabase/supabase-js')`
+ * factory: both import this module, so both see the same instance.
+ */
+export const fake = createFakeSupabase()

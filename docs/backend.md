@@ -151,7 +151,8 @@ they return a non-2xx status and:
 
 Codes: `unauthorized` (401), `forbidden` (403, signed in but not the owner),
 `invalid` (400), `not_found` (404), `not_configured` (503, a secret is
-missing), `upstream` (502, the third party failed).
+missing), `upstream` (502, the third party failed), `internal` (500,
+something broke inside the function).
 
 ### `elevenlabs-signed-url`
 

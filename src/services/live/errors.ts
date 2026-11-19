@@ -79,6 +79,10 @@ const NO_ROW = 'PGRST116'
 const MALFORMED_VALUE = '22P02'
 const PERMISSION_DENIED = '42501'
 const STATEMENT_TIMEOUT = '57014'
+/** SQLSTATEs the migration raises on purpose (docs/backend.md). */
+const JV_INVALID = 'JV400'
+const JV_NOT_FOUND = 'JV404'
+const JV_TOO_LATE = 'JV409'
 
 export function dbError(failure: DbFailure, status: number | undefined, copy: ErrorCopy = {}): ServiceError {
   const code = failure.code ?? ''
@@ -91,6 +95,11 @@ export function dbError(failure: DbFailure, status: number | undefined, copy: Er
   if (code === NO_ROW || (code === MALFORMED_VALUE && copy.notFound !== undefined)) {
     return new ServiceError('not_found', copy.notFound ?? SAY.notFound, cause)
   }
+  // The database's own checks (triggers in the migration) raise these with a
+  // sentence written for the owner, so their message is shown as it is.
+  const ownSentence = failure.message?.trim() || null
+  if (code === JV_NOT_FOUND) return new ServiceError('not_found', ownSentence ?? copy.notFound ?? SAY.notFound, cause)
+  if (code === JV_INVALID || code === JV_TOO_LATE) return new ServiceError('invalid', ownSentence ?? SAY.rejected, cause)
   if (SESSION_CODES.has(code) || status === 401) {
     return new ServiceError('unauthorized', SAY.sessionEnded, cause)
   }

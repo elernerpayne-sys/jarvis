@@ -43,6 +43,8 @@ alter default privileges in schema public revoke all on tables    from anon, aut
 alter default privileges in schema public revoke all on sequences from anon, authenticated;
 alter default privileges in schema public revoke all on functions from anon, authenticated;
 alter default privileges revoke execute on functions from public;
+-- And nobody but the admin may create objects in "public".
+revoke create on schema public from public, anon, authenticated;
 
 
 -- ════════════════════════════════════════════════════════════════════════
@@ -550,7 +552,15 @@ create policy alerts_owner_mark_read on public.alerts
   with check ((select private.is_owner()));
 
 -- Memory: the owner adds, edits and deletes handbook entries and decisions.
-grant insert, update, delete on table public.handbook_entries, public.decisions to authenticated;
+-- Only the fields the app's forms write: id, timestamps and notion_page_id
+-- (set by the later Notion sync) stay under the database's control.
+grant insert (title, category, content, tags),
+      update (title, category, content, tags)
+  on table public.handbook_entries to authenticated;
+grant insert (title, decision, rationale, decided_on, tags),
+      update (title, decision, rationale, decided_on, tags)
+  on table public.decisions to authenticated;
+grant delete on table public.handbook_entries, public.decisions to authenticated;
 
 create policy handbook_entries_owner_add on public.handbook_entries
   for insert to authenticated with check ((select private.is_owner()));
