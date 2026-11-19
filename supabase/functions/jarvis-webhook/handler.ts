@@ -34,7 +34,13 @@ import {
   jsonResponse,
   readBody,
 } from '../_shared/http.ts'
-import { TOLERANCE_SECONDS, verifySignature, webhookSecret } from './signature.ts'
+import {
+  parseSignatureHeader,
+  TOLERANCE_SECONDS,
+  toHex,
+  verifySignature,
+  webhookSecret,
+} from './signature.ts'
 import { parseEnvelope, validateEvent, type WebhookEvent } from './validate.ts'
 
 const TAG = 'jarvis-webhook'
@@ -123,7 +129,10 @@ export async function handleWebhook(request: Request, deps: WebhookDeps): Promis
     console.error(`${TAG}: signature check failed (${verdict})`)
     return errorResponse(401, 'unauthorized', BAD_SIGNATURE)
   }
-  const signatureKey = (header ?? '').trim()
+  // Keyed on the parsed values, so reordering the header or changing the hex
+  // case cannot dress up a replay as a new request.
+  const parsed = parseSignatureHeader(header ?? '')
+  const signatureKey = parsed ? `${parsed.t}:${toHex(parsed.v1)}` : ''
   if (deps.replay && !deps.replay.claim(signatureKey, nowSeconds)) {
     console.error(`${TAG}: signature replayed`)
     return errorResponse(401, 'unauthorized', BAD_SIGNATURE)

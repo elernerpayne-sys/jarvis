@@ -31,7 +31,7 @@ trap cleanup EXIT
 
 new_db() {
   local name="jarvis_test_$$_$1"
-  "${PSQL[@]}" "$SERVER/postgres" -c "drop database if exists $name with (force)" >/dev/null
+  "${PSQL[@]}" "$SERVER/postgres" -c "drop database if exists $name with (force)" >/dev/null 2>&1
   "${PSQL[@]}" "$SERVER/postgres" -c "create database $name" >/dev/null
   throwaway+=("$name")
   echo "$SERVER/$name"
@@ -60,7 +60,7 @@ apply "$DB" "$HERE/helpers.sql" "test helpers"
 total=0
 run_file() { # url file
   local out n
-  if ! out="$( { echo 'begin;'; cat "$2"; printf "\nselect current_setting('test.count', true) as n \\\\gset\nrollback;\n\\\\echo CHECKS :n\n"; } \
+  if ! out="$( { printf '\\o /dev/null\nbegin;\n'; cat "$2"; printf "\nselect current_setting('test.count', true) as n \\\\gset\nrollback;\n\\\\echo CHECKS :n\n"; } \
                | "${PSQL[@]}" "$1" 2>&1)"; then
     echo "$out" | grep -v '^NOTICE' >&2
     echo "FAILED: $(basename "$2")" >&2
