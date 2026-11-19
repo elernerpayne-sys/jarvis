@@ -41,11 +41,12 @@ export default defineConfig({
       workbox: {
         // Precache the app shell only. Data always comes from the network:
         // nothing from Supabase or ElevenLabs is ever cached by the worker.
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // (Icons and the favicon are added by the manifest and includeAssets.)
+        globPatterns: ['**/*.{js,css,html,woff2}'],
+        // Font subsets for scripts the app never shows.
+        globIgnores: ['**/*-{cyrillic,cyrillic-ext,vietnamese}-*.woff2'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
       },
       devOptions: { enabled: false },
     }),

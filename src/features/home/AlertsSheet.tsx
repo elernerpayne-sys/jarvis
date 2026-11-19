@@ -31,8 +31,10 @@ function AlertRow({ alert, onPress }: { alert: Alert; onPress: () => void }) {
       onClick={onPress}
       leading={<Dot tone={ALERT_TONE[alert.type]} className={cn('mt-1', !unread && 'opacity-40')} />}
       title={
-        // Weight as well as colour, so unread does not depend on colour alone.
-        <span className={unread ? 'font-medium text-bone' : 'text-ash'}>
+        // Up to two lines: the title is the alert, so it should not be cut to
+        // one. Weight as well as colour marks unread, for those who cannot
+        // tell the two greys apart.
+        <span className={cn('line-clamp-2 whitespace-normal', unread ? 'font-medium text-bone' : 'text-ash')}>
           {unread ? <span className="sr-only">Unread. </span> : null}
           {alert.title}
         </span>

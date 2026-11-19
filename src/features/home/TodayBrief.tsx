@@ -53,7 +53,7 @@ const FIGURES: readonly Figure[] = [
 const STRIP = 'grid grid-cols-4 divide-x divide-line border-y border-line'
 
 function columnClass(index: number): string {
-  return cn('flex flex-col gap-1 py-4', index > 0 && 'pl-3 sm:pl-4')
+  return cn('flex flex-col gap-1 py-4', index > 0 && 'pl-2.5 sm:pl-4')
 }
 
 function BriefFigures({ brief }: { brief: Brief }) {
@@ -67,7 +67,7 @@ function BriefFigures({ brief }: { brief: Brief }) {
             <Link
               to={figure.to}
               aria-label={figure.spoken(count)}
-              className={cn('group h-full', columnClass(index))}
+              className={cn('group h-full rounded-lg', columnClass(index))}
             >
               <span className={cn('font-voice text-3xl tabular-nums', bad ? 'text-bad' : 'text-bone')}>
                 {count}

@@ -1,10 +1,19 @@
 /** Small pure helpers for the Receptionist screens. */
-import { formatPhone, localDate, plural } from '@/lib/format'
+import { formatDay, formatPhone, formatRelative, localDate, plural } from '@/lib/format'
 import type { CallOutcome, CallSummary, ShopSummary, Timestamp } from '@/lib/types'
 
 /** How a caller is named on screen: their name, or the number when we don't have one. */
 export function callerLabel(call: Pick<CallSummary, 'caller_name' | 'caller_phone'>): string {
   return call.caller_name?.trim() || formatPhone(call.caller_phone) || 'Unknown caller'
+}
+
+/**
+ * When a call came in, for the right edge of its row: how long ago for
+ * today's calls ("20m ago"), the day for older ones ("Yesterday", "Nov 12").
+ */
+export function callTime(startedAt: Timestamp, now: Date): string {
+  const sameDay = localDate(new Date(startedAt)) === localDate(now)
+  return sameDay ? formatRelative(startedAt, now) : formatDay(startedAt, now)
 }
 
 /** A `tel:` link for a number, whatever punctuation it arrived with. */

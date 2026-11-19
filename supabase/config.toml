@@ -1,0 +1,67 @@
+# Supabase project settings for Jarvis.
+#
+# This file configures the LOCAL stack (`supabase start`). A hosted project
+# keeps its dashboard settings until you run `supabase config push`, or make
+# the same three changes by hand:
+#   1. Authentication → Sign In / Providers → turn OFF "Allow new users to sign up"
+#   2. Authentication → Emails → Magic Link → paste supabase/templates/magic_link.html
+#   3. Authentication → Users → "Add user" (the first account becomes the owner)
+#
+# Only settings that differ from the CLI defaults are listed.
+
+project_id = "jarvis"
+
+[db]
+# Must match the hosted project (run `show server_version;` in the SQL editor).
+major_version = 17
+
+[auth]
+site_url = "http://localhost:5173"
+# Sign-in uses a typed 6-digit code, so nothing ever redirects here. These are
+# listed so a password-reset link opened on this computer still works.
+additional_redirect_urls = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
+]
+# One user: the owner. Nobody can create an account from the app.
+# (Do not use [auth.email] enable_signup: that switches email sign-in off.)
+enable_signup = false
+enable_anonymous_sign_ins = false
+minimum_password_length = 12
+
+[auth.email]
+enable_confirmations = false
+# The sign-in email carries a 6-digit code that is good for 10 minutes.
+otp_length = 6
+otp_expiry = 600
+
+# Both templates show the code ({{ .Token }}) instead of a link: a link would
+# open in the phone's browser, not in the installed app.
+[auth.email.template.magic_link]
+subject = "Your Jarvis sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Your Jarvis sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+# Edge functions. The gateway's JWT check is off for all four because each
+# function checks the caller itself, as its first step:
+#   - the first three require the signed-in owner's session and answer with a
+#     readable JSON error (the gateway's own 401 has no CORS headers, so the
+#     app could not show it);
+#   - jarvis-webhook is called by the Jarvis backend, which has no user
+#     session: it is verified by an HMAC signature instead.
+[functions.elevenlabs-signed-url]
+verify_jwt = false
+
+[functions.jarvis-command]
+verify_jwt = false
+
+[functions.connection-status]
+verify_jwt = false
+
+[functions.jarvis-webhook]
+verify_jwt = false

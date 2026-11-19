@@ -132,6 +132,13 @@ export function CodeForm({
               setCode(digitsOnly(event.target.value))
               setProblem(null)
             }}
+            onPaste={(event) => {
+              // Left to the browser, maxLength would cut a pasted "123 456"
+              // short before the space could be dropped.
+              event.preventDefault()
+              setCode(digitsOnly(event.clipboardData.getData('text')))
+              setProblem(null)
+            }}
             className="h-14 text-center indent-[0.4em] font-mono text-xl tracking-[0.4em]"
           />
         )}

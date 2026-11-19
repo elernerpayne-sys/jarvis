@@ -63,7 +63,10 @@ export function PendingApprovals() {
           {(approvals) => (
             <ul className="space-y-3">
               {oldestFirst(approvals).map((approval) => (
-                <li key={approval.id}>
+                // The card's Deny and Approve are both full width and refuse
+                // to shrink, which pushes the page sideways on a phone. Let
+                // them share the row here until the shared card does it.
+                <li key={approval.id} className="[&_button.w-full]:shrink">
                   <ApprovalCard approval={approval} />
                 </li>
               ))}

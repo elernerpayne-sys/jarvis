@@ -252,7 +252,7 @@ describe('Needs your approval', () => {
       'Push the booking fix?',
       'Refund the double booking?',
     ])
-    expect(screen.getByRole('heading', { name: 'Needs your approval 3' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /^Needs your approval\s*3$/ })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(3)
   })
 
@@ -345,7 +345,7 @@ describe('Alerts', () => {
     renderHome()
     const dialog = await openAlerts(user)
 
-    expect(await within(dialog).findByRole('button', { name: /^Unread\. Booking fix is ready/ })).toBeInTheDocument()
+    expect(await within(dialog).findByRole('button', { name: /^Unread\.\s*Booking fix is ready/ })).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: /^Notion is not set up/ })).toBeInTheDocument()
   })
 
@@ -446,13 +446,15 @@ describe('Alerts', () => {
 
   it('says what went wrong in the sheet and loads again on retry', async () => {
     const user = userEvent.setup()
-    service.listAlerts.mockRejectedValueOnce(new Error('The connection dropped.'))
+    service.listAlerts.mockRejectedValue(new Error('The connection dropped.'))
     renderHome()
     const dialog = await openAlerts(user)
 
     const failure = await within(dialog).findByRole('alert')
     expect(failure).toHaveTextContent('Couldn’t load alerts.')
+    expect(failure).toHaveTextContent('The connection dropped.')
 
+    service.listAlerts.mockResolvedValue([taskAlert, callAlert, readAlert])
     await user.click(within(failure).getByRole('button', { name: 'Try again' }))
 
     expect(await within(dialog).findByText('Booking fix is ready')).toBeInTheDocument()

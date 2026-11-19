@@ -1,0 +1,149 @@
+/*
+ * The Talk button's light: the one bold piece of motion in the app.
+ *
+ * Idle, it breathes (the theme's `animate-breathe`, applied in TalkButton).
+ * In a spoken conversation it follows two custom properties that TalkButton
+ * writes on `.talk` from requestAnimationFrame, both 0 to 1:
+ *   --level       the voice right now, eased so it never jitters
+ *   --level-slow  the same, trailing behind, for the parts that should swell
+ *
+ * Listening, the light sits outside the button: the halo and rings open up
+ * with the owner's voice. Speaking, the button itself lights from within.
+ * Amber is the only colour. Only transform and opacity ever animate.
+ */
+@layer components {
+  .talk {
+    --level: 0;
+    --level-slow: 0;
+    position: relative;
+    display: grid;
+    place-items: center;
+    isolation: isolate;
+  }
+
+  .talk-glow,
+  .talk-ripple,
+  .talk-ring,
+  .talk-light {
+    position: absolute;
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+
+  /* Lamplight spilling past the button's edge. */
+  .talk-glow {
+    inset: -34%;
+    z-index: -1;
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--color-amber) 26%, transparent) 52%,
+      color-mix(in srgb, var(--color-amber) 9%, transparent) 74%,
+      transparent 100%
+    );
+    opacity: 0.55;
+  }
+
+  /* A hairline just off the button. */
+  .talk-ring {
+    inset: -0.625rem;
+    border: 1px solid color-mix(in srgb, var(--color-amber) 55%, transparent);
+    opacity: 0.5;
+  }
+
+  /* A fainter, wider hairline that only shows once there is sound. */
+  .talk-ripple {
+    inset: -1.625rem;
+    border: 1px solid color-mix(in srgb, var(--color-amber) 30%, transparent);
+    opacity: 0;
+  }
+
+  /* The lamp inside the button, lit while Jarvis speaks. */
+  .talk-light {
+    inset: 0;
+    background: radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--color-amber) 62%, transparent) 0%,
+      color-mix(in srgb, var(--color-amber) 20%, transparent) 52%,
+      transparent 76%
+    );
+    opacity: 0;
+  }
+
+  .talk-core {
+    background: radial-gradient(circle at 50% 28%, var(--color-raised-3), var(--color-raised) 72%);
+  }
+
+  .talk[data-state='off'] .talk-glow {
+    opacity: 0.18;
+  }
+  .talk[data-state='off'] .talk-ring {
+    opacity: 0.22;
+  }
+
+  .talk[data-state='connecting'] .talk-glow {
+    opacity: 0.4;
+  }
+
+  .talk[data-state='listening'] .talk-glow {
+    opacity: calc(0.3 + var(--level) * 0.7);
+    transform: scale(calc(0.92 + var(--level-slow) * 0.2));
+  }
+  .talk[data-state='listening'] .talk-ring {
+    opacity: calc(0.5 + var(--level) * 0.5);
+    transform: scale(calc(1 + var(--level) * 0.06));
+  }
+  .talk[data-state='listening'] .talk-ripple {
+    opacity: calc(var(--level-slow) * 0.85);
+    transform: scale(calc(1 + var(--level-slow) * 0.14));
+  }
+
+  .talk[data-state='speaking'] .talk-glow {
+    opacity: calc(0.4 + var(--level-slow) * 0.4);
+    transform: scale(calc(0.94 + var(--level-slow) * 0.1));
+  }
+  .talk[data-state='speaking'] .talk-ring {
+    opacity: 0.85;
+  }
+  .talk[data-state='speaking'] .talk-ripple {
+    opacity: calc(var(--level-slow) * 0.4);
+    transform: scale(calc(1 + var(--level-slow) * 0.06));
+  }
+  .talk[data-state='speaking'] .talk-light {
+    opacity: calc(0.3 + var(--level) * 0.7);
+    transform: scale(calc(0.84 + var(--level-slow) * 0.16));
+  }
+
+  /*
+   * Less motion: nothing breathes, pulses or scales. The state is still
+   * told apart by where the light sits: a solid ring while listening, a lit
+   * button while Jarvis speaks, a dashed ring while connecting.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .talk-glow,
+    .talk-ripple,
+    .talk-ring,
+    .talk-light {
+      animation: none !important;
+      transform: none !important;
+    }
+
+    .talk[data-state='connecting'] .talk-ring {
+      border-style: dashed;
+      opacity: 0.8;
+    }
+    .talk[data-state='listening'] .talk-ring,
+    .talk[data-state='speaking'] .talk-ring {
+      border-width: 2px;
+      opacity: 1;
+    }
+    .talk[data-state='listening'] .talk-glow {
+      opacity: 0.7;
+    }
+    .talk[data-state='listening'] .talk-ripple {
+      opacity: 0.6;
+    }
+    .talk[data-state='speaking'] .talk-light {
+      opacity: 0.85;
+    }
+  }
+}

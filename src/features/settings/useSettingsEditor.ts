@@ -63,10 +63,14 @@ export function useSettingsEditor(stored: Settings): { settings: Settings; save:
     setUnconfirmedState(next)
   }
 
-  // Which save last touched each field, so an older save finishing late
+  // Which save last touched each field, so an older save finishing
   // can't undo a newer change to the same control.
   const lastSaveOf = useRef(new Map<Field, number>())
   const saveCount = useRef(0)
+
+  // Saves go out one at a time, in the order they were made. Sent side by
+  // side, an older answer could arrive last and overwrite a newer one.
+  const queue = useRef<Promise<void>>(Promise.resolve())
 
   const save: SaveSettings = (patch, options) => {
     const changed = changedFields({ ...stored, ...unconfirmedRef.current }, patch)
@@ -77,8 +81,8 @@ export function useSettingsEditor(stored: Settings): { settings: Settings; save:
     for (const field of fields) lastSaveOf.current.set(field, saveId)
     setUnconfirmed({ ...unconfirmedRef.current, ...changed })
 
-    update
-      .mutateAsync(changed)
+    queue.current = queue.current
+      .then(() => update.mutateAsync(changed))
       .then(
         () => toast(options?.done ?? 'Saved', { tone: 'ok', duration: 2000 }),
         (error: unknown) =>

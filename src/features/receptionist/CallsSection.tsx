@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
 
 import { cn } from '@/lib/cn'
-import { formatRelative } from '@/lib/format'
 import { CALL_OUTCOME } from '@/lib/status'
 import type { CallFilter, CallSummary } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
@@ -12,7 +11,7 @@ import { List, ListRow } from '@/components/ui/List'
 import { Section } from '@/components/ui/Page'
 import { EmptyState, QueryView, SkeletonRows } from '@/components/ui/States'
 import { Dot } from '@/components/ui/StatusDot'
-import { callerLabel } from '@/features/receptionist/lib'
+import { callTime, callerLabel } from '@/features/receptionist/lib'
 import { useNow } from '@/features/receptionist/useNow'
 
 const FILTERS: ReadonlyArray<SegmentedOption<CallFilter>> = [
@@ -39,7 +38,7 @@ function CallRow({ call, now, onOpen }: { call: CallSummary; now: Date; onOpen: 
       trailing={
         <>
           <time dateTime={call.started_at} className="block">
-            {formatRelative(call.started_at, now)}
+            {callTime(call.started_at, now)}
           </time>
           <span className={cn('block', outcome.tone === 'bad' && 'text-bad')}>{outcome.label}</span>
         </>

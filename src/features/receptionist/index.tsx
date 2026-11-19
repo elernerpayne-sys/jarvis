@@ -1,10 +1,19 @@
-import { Page } from '@/components/ui/Page'
+import { Navigate, Route, Routes } from 'react-router'
 
-/** Placeholder: replaced by the real screen. */
-export default function Placeholder() {
+import { routes } from '@/lib/links'
+import { ShopScreen } from '@/features/receptionist/ShopScreen'
+import { ShopsScreen } from '@/features/receptionist/ShopsScreen'
+
+/**
+ * Receptionist: the barbershops Jarvis answers for, and inside each one its
+ * appointments and call log. Mounted at "/receptionist/*".
+ */
+export default function Receptionist() {
   return (
-    <Page title="Receptionist">
-      <p className="text-ash">This screen is not built yet.</p>
-    </Page>
+    <Routes>
+      <Route index element={<ShopsScreen />} />
+      <Route path=":shopId" element={<ShopScreen />} />
+      <Route path="*" element={<Navigate to={routes.receptionist} replace />} />
+    </Routes>
   )
 }

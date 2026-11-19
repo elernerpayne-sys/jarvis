@@ -1,18 +1,12 @@
-import type { ReactNode } from 'react'
-
+/**
+ * Talk to Jarvis: a live conversation with the owner's voice agent.
+ *
+ * - `<VoiceProvider>` goes once above the router and owns the conversation.
+ * - `<TalkPanel>` is the hero on Home: the button, the transcript, typing.
+ * - `<VoicePill>` floats on every other screen while a conversation is live.
+ */
 export type * from '@/features/voice/types'
 
-/** Placeholder: replaced by the real voice feature. */
-export function VoiceProvider({ children }: { children: ReactNode }) {
-  return <>{children}</>
-}
-
-/** Placeholder: the Talk to Jarvis hero. */
-export function TalkPanel() {
-  return <p className="text-ash">Talk to Jarvis is not built yet.</p>
-}
-
-/** Placeholder: the floating "conversation in progress" pill. */
-export function VoicePill() {
-  return null
-}
+export { VoiceProvider } from '@/features/voice/VoiceProvider'
+export { TalkPanel } from '@/features/voice/TalkPanel'
+export { VoicePill } from '@/features/voice/VoicePill'

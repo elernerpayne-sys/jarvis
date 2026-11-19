@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import type { ComponentType } from 'react'
 import { BookOpen, House, Phone, Settings, SquareTerminal } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router'
@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/app/ErrorBoundary'
 import { useRealtimeStatus } from '@/app/RealtimeProvider'
 import { cn } from '@/lib/cn'
 import { routes } from '@/lib/links'
+import { applyWaitingUpdate } from '@/lib/updates'
 import { api } from '@/services'
 import { usePendingApprovals } from '@/services/hooks'
 import { Skeleton, SkeletonRows } from '@/components/ui/States'
@@ -38,10 +39,19 @@ export function PageSkeleton() {
   )
 }
 
-/** Jump to the top when moving to a different screen. */
-function useScrollToTopOnNavigate() {
+/**
+ * Moving to a different screen: start at the top, and if a new version of the
+ * app is waiting, this is a good moment to switch to it.
+ */
+function useScreenChange() {
   const { pathname } = useLocation()
+  const first = useRef(true)
   useEffect(() => {
+    if (first.current) {
+      first.current = false
+      return
+    }
+    if (applyWaitingUpdate()) return
     window.scrollTo(0, 0)
   }, [pathname])
 }
@@ -71,7 +81,7 @@ function DemoNote({ className }: { className?: string }) {
  */
 export function AppShell() {
   const { pathname } = useLocation()
-  useScrollToTopOnNavigate()
+  useScreenChange()
   const pending = usePendingApprovals().data?.length ?? 0
 
   return (
