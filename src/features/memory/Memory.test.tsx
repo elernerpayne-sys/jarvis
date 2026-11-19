@@ -359,6 +359,18 @@ describe('Handbook', () => {
     ])
   })
 
+  it('opens the form on "Edit" without saving anything', async () => {
+    const user = userEvent.setup()
+    renderMemory()
+
+    await user.click(await row('Deposit policy'))
+    await user.click(within(screen.getByRole('dialog', { name: 'Deposit policy' })).getByRole('button', { name: 'Edit' }))
+
+    const form = screen.getByRole('dialog', { name: 'Edit entry' })
+    expect(within(form).getByRole('button', { name: 'Save entry' })).toBeEnabled()
+    expect(service.saveHandbookEntry).not.toHaveBeenCalled()
+  })
+
   it('edits an entry in place and goes back to reading it', async () => {
     const user = userEvent.setup()
     renderMemory()

@@ -61,7 +61,7 @@ function ConnectionNote() {
   if (status !== 'offline') return null
   return (
     <p role="status" className="border-b border-line bg-raised px-5 py-2 text-center text-sm text-ash">
-      Offline. Showing what was last loaded.
+      Live updates are paused. Reconnecting…
     </p>
   )
 }

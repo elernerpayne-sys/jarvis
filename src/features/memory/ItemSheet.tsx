@@ -200,19 +200,21 @@ export function ItemSheet<Item extends MemoryItem, Draft extends Record<keyof Dr
         footer={
           reading ? (
             <>
-              <Button size="lg" variant="ghost" onClick={onClose}>
+              {/* Distinct keys: if React reused the "Edit" element as the submit
+                  button, the click that opens the form would also submit it. */}
+              <Button key="close" size="lg" variant="ghost" onClick={onClose}>
                 Close
               </Button>
-              <Button size="lg" id={editButtonId} onClick={startEditing}>
+              <Button key="edit" size="lg" id={editButtonId} onClick={startEditing}>
                 Edit
               </Button>
             </>
           ) : (
             <>
-              <Button size="lg" onClick={() => leaveForm(current ? 'read' : 'closed')} disabled={saving}>
+              <Button key="cancel" size="lg" onClick={() => leaveForm(current ? 'read' : 'closed')} disabled={saving}>
                 Cancel
               </Button>
-              <Button size="lg" variant="primary" type="submit" form={formId} loading={saving}>
+              <Button key="save" size="lg" variant="primary" type="submit" form={formId} loading={saving}>
                 {copy.save}
               </Button>
             </>

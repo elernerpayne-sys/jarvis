@@ -510,7 +510,8 @@ describe('Repos Jarvis can work in', () => {
     await user.click(await screen.findByRole('button', { name: 'Remove acme/shop-tools' }))
     expect(service.updateSettings).not.toHaveBeenCalled()
 
-    const dialog = screen.getByRole('dialog', { name: 'Remove acme/shop-tools?' })
+    const dialog = screen.getByRole('dialog', { name: 'Remove this repo?' })
+    expect(dialog).toHaveTextContent('Jarvis won’t start new coding tasks in acme/shop-tools.')
     await user.click(within(dialog).getByRole('button', { name: 'Remove' }))
 
     expect(service.updateSettings).toHaveBeenCalledWith({ allowed_repos: ['acme/booking-site'] })

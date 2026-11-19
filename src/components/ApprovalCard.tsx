@@ -75,11 +75,11 @@ export function ApprovalCard({
           View the task
         </Link>
       ) : null}
-      <div className="mt-4 flex gap-3">
-        <Button size="lg" fullWidth onClick={() => setAsking('denied')}>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Button size="lg" onClick={() => setAsking('denied')}>
           Deny
         </Button>
-        <Button size="lg" fullWidth variant="primary" onClick={() => setAsking('approved')}>
+        <Button size="lg" variant="primary" onClick={() => setAsking('approved')}>
           Approve
         </Button>
       </div>

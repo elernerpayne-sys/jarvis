@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, SquareTerminal } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { cn } from '@/lib/cn'
 import { formatRelative } from '@/lib/format'
 import { routes } from '@/lib/links'
 import { TASK_STATUS } from '@/lib/status'
@@ -33,12 +34,27 @@ function NewTaskLink() {
   )
 }
 
+const REPO_PART = 'inline-block max-w-full truncate align-bottom'
+
+/** "owner/name", wrapping only after the slash; a name too long for the row is cut short. */
+function RepoName({ repo }: { repo: string }) {
+  const slash = repo.indexOf('/')
+  if (slash === -1) return <span className={cn('font-mono', REPO_PART)}>{repo}</span>
+  return (
+    <span className="font-mono">
+      <span className={REPO_PART}>{repo.slice(0, slash + 1)}</span>
+      <span className={REPO_PART}>{repo.slice(slash + 1)}</span>
+    </span>
+  )
+}
+
 function TaskRow({ task, now }: { task: Task; now: Date }) {
   return (
     <ListRow
       to={routes.task(task.id)}
-      title={task.title}
-      subtitle={<span className="break-all font-mono">{task.repo}</span>}
+      // Two lines of title: one line cuts most task names to a few words on a phone.
+      title={<span className="line-clamp-2 whitespace-normal">{task.title}</span>}
+      subtitle={<RepoName repo={task.repo} />}
       trailing={
         <span className="flex flex-col items-end gap-1">
           <StatusDot {...TASK_STATUS[task.status]} />

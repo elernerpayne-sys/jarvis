@@ -56,13 +56,20 @@ function AddRepoForm({ repos, save }: { repos: readonly string[]; save: SaveSett
 
 /** The repos Jarvis may run coding tasks in. The New task form offers these. */
 export function ReposSection({ repos, save }: { repos: readonly string[]; save: SaveSettings }) {
-  // The repo waiting for the owner to confirm its removal, if any.
+  // The repo the confirm dialog is about. It outlives `asking` so the name
+  // stays in the dialog while it slides away.
   const [removing, setRemoving] = useState<string | null>(null)
+  const [asking, setAsking] = useState(false)
+
+  function askToRemove(repo: string) {
+    setRemoving(repo)
+    setAsking(true)
+  }
 
   function confirmRemove() {
+    setAsking(false)
     if (removing === null) return
     save({ allowed_repos: repos.filter((repo) => repo !== removing) }, { done: 'Removed' })
-    setRemoving(null)
   }
 
   return (
@@ -74,7 +81,7 @@ export function ReposSection({ repos, save }: { repos: readonly string[]; save: 
           {repos.map((repo) => (
             <li key={repo} className="flex min-h-16 items-center justify-between gap-3 py-2">
               <span className="min-w-0 break-all font-mono text-sm text-bone">{repo}</span>
-              <IconButton label={`Remove ${repo}`} onClick={() => setRemoving(repo)} className="-mr-3">
+              <IconButton label={`Remove ${repo}`} onClick={() => askToRemove(repo)} className="-mr-3">
                 <Trash2 aria-hidden className="size-5" />
               </IconButton>
             </li>
@@ -85,13 +92,19 @@ export function ReposSection({ repos, save }: { repos: readonly string[]; save: 
       <AddRepoForm repos={repos} save={save} />
 
       <ConfirmDialog
-        open={removing !== null}
-        title={`Remove ${removing ?? 'this repo'}?`}
-        body="Jarvis won’t start new coding tasks in this repo. Tasks already under way keep going."
+        open={asking}
+        title="Remove this repo?"
+        body={
+          <>
+            Jarvis won’t start new coding tasks in{' '}
+            <span className="break-all font-mono text-sm text-bone">{removing}</span>. Tasks already under way keep
+            going.
+          </>
+        }
         confirmLabel="Remove"
         tone="danger"
         onConfirm={confirmRemove}
-        onCancel={() => setRemoving(null)}
+        onCancel={() => setAsking(false)}
       />
     </Section>
   )

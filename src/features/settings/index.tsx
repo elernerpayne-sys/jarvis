@@ -14,6 +14,7 @@ function PreferencesSkeleton() {
   return (
     <>
       <Section title="Notifications">
+        <p className="-mt-2 mb-6 text-sm text-ash">How Jarvis reaches you.</p>
         <div className="space-y-8">
           <div className="space-y-2">
             <Skeleton className="h-4 w-36" />
