@@ -26,6 +26,10 @@ things move on their own (a running task logs lines and then asks for
 approval, calls come in, tasks you start run to completion). Nothing is
 saved; a reload resets it.
 
+In demo mode Talk to Jarvis is a stand-in: it gives a scripted briefing from
+the sample data and answers simple typed questions. It does not hear you. The
+real voice conversation needs live mode (below) and an https address.
+
 To look at a particular state, add `?demo=empty`, `?demo=error` or
 `?demo=slow` to the address. `?demo=off` goes back to normal.
 
@@ -36,8 +40,7 @@ soon as both are set, the app is live and everything sits behind sign-in.
 
 **Quick look, same Wi-Fi.** `npm run dev` prints a "Network" address such as
 `http://192.168.1.20:5173`. Open that on your phone. Everything is clickable,
-but the microphone and "Add to Home Screen" as an app need https, so the Talk
-button uses the simulated voice only.
+but the microphone and installing it as an app both need https.
 
 **The real thing (https).** Either:
 
@@ -209,6 +212,6 @@ npm run typecheck     # TypeScript
 npm test              # unit and component tests
 npm run lint
 npm run build         # production build, including the service worker
-npm run test:db       # database: schema, security and function tests (needs psql and a Postgres)
-npm run test:functions  # edge functions (needs Deno)
+npm run test:db       # database: access rules and functions (needs psql; set DATABASE_URL to an empty Postgres database)
+npm run test:functions  # edge functions (needs Deno on your PATH)
 ```

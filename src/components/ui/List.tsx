@@ -55,10 +55,8 @@ export function ListRow({
     <>
       {leading ? <span className="flex shrink-0 items-center self-start pt-1">{leading}</span> : null}
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-base text-bone">{title}</span>
-        {subtitle ? (
-          <span className="mt-0.5 line-clamp-2 block text-sm text-ash">{subtitle}</span>
-        ) : null}
+        <span className="line-clamp-2 text-base text-bone">{title}</span>
+        {subtitle ? <span className="mt-0.5 line-clamp-2 text-sm text-ash">{subtitle}</span> : null}
         {children}
       </span>
       {trailing ? (
