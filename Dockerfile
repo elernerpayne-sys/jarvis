@@ -24,8 +24,9 @@ COPY server ./server
 # The sample data for `npm run seed` comes from the app's demo data.
 COPY src ./src
 COPY server/docker-entrypoint.sh /usr/local/bin/jarvis-entrypoint
-RUN chmod +x /usr/local/bin/jarvis-entrypoint && mkdir -p /data && chown node:node /data
-VOLUME /data
+# Strip Windows line endings in case the repo was checked out on Windows.
+RUN sed -i 's/\r$//' /usr/local/bin/jarvis-entrypoint && chmod +x /usr/local/bin/jarvis-entrypoint \
+  && mkdir -p /data && chown node:node /data
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||8080)+'/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
